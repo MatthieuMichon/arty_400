@@ -38,4 +38,4 @@ vio_gui:
 	vivado -nojournal -nolog -mode gui -source ./scripts/vio_gui.tcl $(COLOR_OUTPUT)
 
 clean:
-	rm build/ vivado* -rf
+	rm build/ .Xil/ work/ vivado* -rf

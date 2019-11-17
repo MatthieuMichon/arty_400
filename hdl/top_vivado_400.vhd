@@ -14,7 +14,7 @@ use unisim.vcomponents.all;
 --------------------------------------------------------------------------------
 entity top_vivado_400 is
     generic (
-        ILA_C_PROBE0_WIDTH: positive);
+        ILA_C_PROBE0_WIDTH: natural := 0);
     port (
         -- Oscillator
         gclk100: in std_ulogic;
@@ -71,12 +71,8 @@ begin
     clk300 <= clk(1);
     clk200 <= clk(2);
 
-    b_ila_vio: block is
+    g_ila: if ILA_C_PROBE0_WIDTH /= 0 generate
         signal ila_probe0: std_ulogic_vector(ILA_C_PROBE0_WIDTH-1 downto 0);
-        signal vio_in0: std_ulogic_vector(16-1 downto 0);
-        signal vio_in0_last: std_ulogic_vector(16-1 downto 0);
-        signal vio_in0_rise: std_ulogic_vector(16-1 downto 0);
-        signal vio_out0: std_ulogic_vector(16-1 downto 0);
     begin
         ila_probe0 <= (
             0 => ck_rst,
@@ -88,7 +84,7 @@ begin
         i_ila: ila port map (
             clk => clk200,
             probe0 => ila_probe0);
-    end block;
+    end generate;
 end block;
 
 end architecture;

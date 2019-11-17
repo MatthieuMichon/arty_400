@@ -54,11 +54,13 @@ set_property part xc7a35ticsg324-1L [current_project]
 # ] [get_ips vio]
 # synth_ip [get_ips vio]
 
+set ILA_C_PROBE0_WIDTH 36
+
 create_ip -name ila -vendor xilinx.com -library ip -module_name ila
 set_property -dict [list \
-	CONFIG.C_PROBE0_WIDTH {36} \
-	CONFIG.C_DATA_DEPTH {1024} \
-	CONFIG.C_NUM_OF_PROBES {1} \
+	CONFIG.C_PROBE0_WIDTH  $ILA_C_PROBE0_WIDTH \
+	CONFIG.C_DATA_DEPTH 1024 \
+	CONFIG.C_NUM_OF_PROBES 1 \
 ] [get_ips ila]
 synth_ip [get_ips ila]
 
@@ -66,7 +68,11 @@ synth_ip [get_ips ila]
 # Synthesize
 # ------------------------------------------------------------------------------
 
-synth_design -top [lindex [find_top] 0] -flatten_hierarchy none -verbose -generic ILA_C_PROBE0_WIDTH=36
+synth_design \
+	-top [lindex [find_top] 0] \
+	-flatten_hierarchy none \
+	-verbose\
+	-generic ILA_C_PROBE0_WIDTH=$ILA_C_PROBE0_WIDTH
 #write_checkpoint -force synth_design.dcp
 report_timing_summary -file synth_design_timing_summary.rpt
 
