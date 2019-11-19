@@ -21,3 +21,22 @@ set_property -dict {PACKAGE_PIN H14} [get_ports eth_txd[0]]; #IO_L15P_T2_DQS_15 
 set_property -dict {PACKAGE_PIN J14} [get_ports eth_txd[1]]; #IO_L19P_T3_A22_15 Sch=eth_txd[1]
 set_property -dict {PACKAGE_PIN J13} [get_ports eth_txd[2]]; #IO_L17N_T2_A25_15 Sch=eth_txd[2]
 set_property -dict {PACKAGE_PIN H17} [get_ports eth_txd[3]]; #IO_L18P_T2_A24_15 Sch=eth_txd[3]
+
+# MII mode
+
+################################################################################
+# Clock Oscillator reference: ASEM1-100.000MHZ-LC-T
+
+create_clock -period 40 [get_ports eth_rx_clk];
+
+set_input_delay -min 10 -clock [get_clocks eth_rx_clk] [get_ports eth_rxd];
+set_input_delay -min 10 -clock [get_clocks eth_rx_clk] [get_ports eth_rx_dv];
+set_input_delay -max 30 -clock [get_clocks eth_rx_clk] [get_ports eth_rxd];
+set_input_delay -max 30 -clock [get_clocks eth_rx_clk] [get_ports eth_rx_dv];
+
+create_clock -period 40 [get_ports eth_tx_clk];
+
+set_output_delay -min 10 -clock [get_clocks eth_tx_clk] [get_ports eth_txd];
+set_output_delay -min 10 -clock [get_clocks eth_tx_clk] [get_ports eth_tx_dv];
+set_output_delay -max 30 -clock [get_clocks eth_tx_clk] [get_ports eth_txd];
+set_output_delay -max 30 -clock [get_clocks eth_tx_clk] [get_ports eth_tx_dv];

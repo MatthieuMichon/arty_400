@@ -14,11 +14,25 @@ use unisim.vcomponents.all;
 --------------------------------------------------------------------------------
 entity top_vivado_400 is
     generic (
-        ILA_C_PROBE0_WIDTH: natural := 0);
+        ILA_C_PROBE0_WIDTH: natural := 0;
+        MII_DATA_WIDTH: positive := 4);
     port (
-        -- Oscillator
+        -- MII
+        eth_col: in std_ulogic;
+        eth_crs: in std_ulogic;
+        eth_mdc: out std_ulogic;
+        eth_mdio: inout std_ulogic;
+        eth_ref_clk: out std_ulogic;
+        eth_rstn: out std_ulogic;
+        eth_rx_clk: in std_ulogic;
+        eth_rx_dv: in std_ulogic;
+        eth_rxd: in std_ulogic_vector(MII_DATA_WIDTH-1 downto 0);
+        eth_rxerr: in std_ulogic;
+        eth_tx_clk: in std_ulogic;
+        eth_tx_en: out std_ulogic;
+        eth_txd: out std_ulogic_vector(MII_DATA_WIDTH-1 downto 0);
+        -- Essential Ports
         gclk100: in std_ulogic;
-        -- Reset Push Button
         ck_rst: in std_ulogic -- '1': released
     );
 end entity;
@@ -42,7 +56,7 @@ begin
 
     pll_rst <= not ck_rst when rising_edge(clk100);
 
-    mmcme2_base_mii_ref_clk: mmcme2_base
+    i_mmcme2_base_internal_clk: mmcme2_base
         generic map (
             CLKIN1_PERIOD => 10.0,
             CLKFBOUT_MULT_F => 12.0, -- 2..64
@@ -78,6 +92,8 @@ begin
             0 => ck_rst,
             1 => pll_lock,
             2 => pll_rst,
+            3 => eth_rx_clk,
+            4 => eth_tx_clk,
 
             others => '0');
 
@@ -85,6 +101,78 @@ begin
             clk => clk200,
             probe0 => ila_probe0);
     end generate;
+end block;
+
+b_mii: block is
+    signal bufg_eth_rx_clk: std_ulogic;
+    signal bufg_eth_tx_clk: std_ulogic;
+    signal pll_rst: std_ulogic;
+    signal pll_fb: std_ulogic;
+    signal mii_ref_clk: std_ulogic;
+    signal bufg_mii_ref_clk: std_ulogic;
+begin
+    pll_rst <= not ck_rst when rising_edge(clk100);
+
+    i_mmcme2_base_mii_ref_clk: mmcme2_base
+        generic map (
+            CLKIN1_PERIOD => 10.0,
+            CLKFBOUT_MULT_F => 1.0 * 1200 / 100, -- 2..64
+            CLKOUT0_DIVIDE_F => 1.0 * 1200 / 25, -- 1.000; 2.000 to 128.000
+            CLKOUT1_DIVIDE => 1200 / 200) -- 1..128
+        port map (
+            clkin1 => clk100,
+            clkfbin => pll_fb,
+            clkfbout => pll_fb,
+            clkout0 => mii_ref_clk,
+            clkout1 => open,
+            locked => open,
+            rst => pll_rst,
+            pwrdwn => '0');
+
+    i_bufg_eth_ref_clk: bufg port map (
+        i => mii_ref_clk,
+        o => bufg_mii_ref_clk);
+
+    i_oddr_eth_ref_clk: oddr port map (
+        C => bufg_mii_ref_clk,
+        CE => '1',
+        D1 => '1',
+        D2 => '0',
+        Q => eth_ref_clk);
+
+    eth_rstn <= '1';
+    eth_mdc <= 'Z';
+    eth_mdio <= 'Z';
+    eth_tx_en <= '0';
+    eth_txd <= (others=>'0');
+
+    --i_bufg_eth_rx_clk: bufg port map (
+    --    i => eth_rx_clk,
+    --    o => bufg_eth_rx_clk);
+
+    --i_bufg_eth_tx_clk: bufg port map (
+    --    i => eth_tx_clk,
+    --    o => bufg_eth_tx_clk);
+
+    --i_mmcme2_base_mii_eth_rx_clk: mmcme2_base
+    --    generic map (
+    --        CLKIN1_PERIOD => MII_FOUR_BIT_CLK_PERIOD,
+    --        CLKFBOUT_MULT_F => 32, -- 2..64
+    --        CLKOUT0_DIVIDE_F => 3.0, -- 1.000; 2.000 to 128.000
+    --        CLKOUT1_DIVIDE => 4, -- 1..128
+    --        CLKOUT2_DIVIDE => 6 -- 1..128
+    --    )
+    --    port map (
+    --        clkin1 => bufg_eth_rx_clk,
+    --        clkfbin => pll_fb, -- 800 MHz
+    --        clkfbout => pll_fb,
+    --        clkout0 => pll_clk(0),
+    --        clkout1 => pll_clk(1),
+    --        clkout2 => pll_clk(2),
+    --        locked => pll_lock,
+    --        rst => pll_rst,
+    --        pwrdwn => '0');
+
 end block;
 
 end architecture;

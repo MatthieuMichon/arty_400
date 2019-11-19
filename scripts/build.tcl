@@ -25,6 +25,7 @@ cd $work_directory
 set xdc_dir [file normalize "../sdc"]
 set xdc_files [list \
 	[file normalize $xdc_dir/arty_ess.xdc] \
+	[file normalize $xdc_dir/arty_mii.xdc] \
 	[file normalize $xdc_dir/arty_board.xdc] \
 ]
 read_xdc $xdc_files
