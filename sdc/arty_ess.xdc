@@ -17,5 +17,5 @@ set_input_jitter gclk100 0.050;
 # Reset Push Buton (pressed: '0', released: '1')
 
 set_property package_pin c2 [get_ports ck_rst]; #IO_L16P_T2_35 Sch=ck_rst
-set_input_delay -clock gclk100 1.0 [get_ports ck_rst];
+set_input_delay -clock gclk100 -min 1.0 -max 5.0 [get_ports ck_rst];
 set_false_path -from [get_ports ck_rst];
