@@ -85,22 +85,22 @@ begin
     clk300 <= clk(1);
     clk200 <= clk(2);
 
-    g_ila: if ILA_C_PROBE0_WIDTH /= 0 generate
-        signal ila_probe0: std_ulogic_vector(ILA_C_PROBE0_WIDTH-1 downto 0);
-    begin
-        ila_probe0 <= (
-            0 => ck_rst,
-            1 => pll_lock,
-            2 => pll_rst,
-            3 => eth_rx_clk,
-            4 => eth_tx_clk,
+    --g_ila: if ILA_C_PROBE0_WIDTH /= 0 generate
+    --    signal ila_probe0: std_ulogic_vector(ILA_C_PROBE0_WIDTH-1 downto 0);
+    --begin
+    --    ila_probe0 <= (
+    --        0 => ck_rst,
+    --        1 => pll_lock,
+    --        2 => pll_rst,
+    --        3 => eth_rx_clk,
+    --        4 => eth_tx_clk,
 
-            others => '0');
+    --        others => '0');
 
-        i_ila: ila port map (
-            clk => clk200,
-            probe0 => ila_probe0);
-    end generate;
+    --    i_ila: ila port map (
+    --        clk => clk200,
+    --        probe0 => ila_probe0);
+    --end generate;
 end block;
 
 b_mii: block is
@@ -116,8 +116,8 @@ begin
     i_mmcme2_base_mii_ref_clk: mmcme2_base
         generic map (
             CLKIN1_PERIOD => 10.0,
-            CLKFBOUT_MULT_F => 1.0 * 1200 / 100, -- 2..64
-            CLKOUT0_DIVIDE_F => 1.0 * 1200 / 25, -- 1.000; 2.000 to 128.000
+            CLKFBOUT_MULT_F => real(1.0 * 1200 / 100), -- 2..64
+            CLKOUT0_DIVIDE_F => real(1.0 * 1200 / 25), -- 1.000; 2.000 to 128.000
             CLKOUT1_DIVIDE => 1200 / 200) -- 1..128
         port map (
             clkin1 => clk100,
