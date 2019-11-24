@@ -11,6 +11,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 library unisim;
 use unisim.vcomponents.all;
+library secureip;
 --------------------------------------------------------------------------------
 entity top_vivado_400 is
     generic (
@@ -84,23 +85,6 @@ begin
     clk400 <= clk(0);
     clk300 <= clk(1);
     clk200 <= clk(2);
-
-    --g_ila: if ILA_C_PROBE0_WIDTH /= 0 generate
-    --    signal ila_probe0: std_ulogic_vector(ILA_C_PROBE0_WIDTH-1 downto 0);
-    --begin
-    --    ila_probe0 <= (
-    --        0 => ck_rst,
-    --        1 => pll_lock,
-    --        2 => pll_rst,
-    --        3 => eth_rx_clk,
-    --        4 => eth_tx_clk,
-
-    --        others => '0');
-
-    --    i_ila: ila port map (
-    --        clk => clk200,
-    --        probe0 => ila_probe0);
-    --end generate;
 end block;
 
 b_mii: block is
@@ -110,6 +94,8 @@ b_mii: block is
     signal pll_fb: std_ulogic;
     signal mii_ref_clk: std_ulogic;
     signal bufg_mii_ref_clk: std_ulogic;
+
+    signal deser_mii_rx_dv: std_ulogic_vector(8-1 downto 0);
 begin
     pll_rst <= not ck_rst when rising_edge(clk100);
 
@@ -146,6 +132,33 @@ begin
     eth_tx_en <= '0';
     eth_txd <= (others=>'0');
 
+    i_iserdes_eth_rxd_0: iserdes generic map (
+        DATA_RATE => "SDR",
+        DATA_WIDTH => deser_mii_rx_dv'length,
+        INTERFACE_TYPE => "NETWORKING"
+    ) port map (
+        O => open,
+        Q1 => deser_mii_rx_dv(0),
+        Q2 => deser_mii_rx_dv(1),
+        Q3 => deser_mii_rx_dv(2),
+        Q4 => deser_mii_rx_dv(3),
+        SHIFTOUT1 => open,
+        SHIFTOUT2 => open,
+        BITSLIP => '0',
+        CE1 => '1',
+        CE2 => '1',
+        CLK => clk200,
+        CLKDIV => bufg_mii_ref_clk,
+        D => eth_rxd(0),
+        OCLK => '0',
+        SHIFTIN1 => '0',
+        DLYCE => '0',
+        DLYINC => '0',
+        DLYRST => '0',
+        REV => '0',
+        SR => '0',
+        SHIFTIN2 => '0');
+
     --i_bufg_eth_rx_clk: bufg port map (
     --    i => eth_rx_clk,
     --    o => bufg_eth_rx_clk);
@@ -174,6 +187,23 @@ begin
     --        pwrdwn => '0');
 
 end block;
+
+    --g_ila: if ILA_C_PROBE0_WIDTH /= 0 generate
+    --    signal ila_probe0: std_ulogic_vector(ILA_C_PROBE0_WIDTH-1 downto 0);
+    --begin
+    --    ila_probe0 <= (
+    --        0 => ck_rst,
+    --        1 => pll_lock,
+    --        2 => pll_rst,
+    --        3 => eth_rx_clk,
+    --        4 => eth_tx_clk,
+
+    --        others => '0');
+
+    --    i_ila: ila port map (
+    --        clk => clk200,
+    --        probe0 => ila_probe0);
+    --end generate;
 
 end architecture;
 
