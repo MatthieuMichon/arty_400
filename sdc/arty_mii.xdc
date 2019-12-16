@@ -22,10 +22,8 @@ set_property -dict {PACKAGE_PIN J14} [get_ports eth_txd[1]]; #IO_L19P_T3_A22_15 
 set_property -dict {PACKAGE_PIN J13} [get_ports eth_txd[2]]; #IO_L17N_T2_A25_15 Sch=eth_txd[2]
 set_property -dict {PACKAGE_PIN H17} [get_ports eth_txd[3]]; #IO_L18P_T2_A24_15 Sch=eth_txd[3]
 
-# MII mode
-
 ################################################################################
-# Clock Oscillator reference: ASEM1-100.000MHZ-LC-T
+# MII Pin IO Constraints
 
 create_clock -period 40 [get_ports eth_rx_clk];
 

@@ -42,9 +42,11 @@ check:
 
 sim:
 	mkdir -p build/work
+	cd build/ && ghdl -a $(GHDL_FLAGS) $(SIM_LIBS) ../hdl/mii_mdio.vhd
 	cd build/ && ghdl -a $(GHDL_FLAGS) $(SIM_LIBS) ../hdl/top_vivado_400.vhd
 	cd build/ && ghdl -a $(GHDL_FLAGS) $(SIM_LIBS) ../hdl/top_vivado_400_tb.vhd
 	cd build/ && ghdl -e $(GHDL_FLAGS) $(SIM_LIBS) top_vivado_400_tb
+	cd build/ && ghdl -r $(GHDL_FLAGS) $(SIM_LIBS) top_vivado_400_tb --wave=run.ghw
 
 build:
 	vivado -nojournal -nolog -mode batch -source ./scripts/build.tcl $(COLOR_OUTPUT)
@@ -52,8 +54,8 @@ build:
 program:
 	vivado -nojournal -nolog -mode batch -source ./scripts/program.tcl $(COLOR_OUTPUT)
 
-vio_gui:
-	vivado -nojournal -nolog -mode gui -source ./scripts/vio_gui.tcl $(COLOR_OUTPUT)
+gui:
+	vivado -nojournal -nolog -mode gui -source ./scripts/gui.tcl $(COLOR_OUTPUT)
 
 clean:
 	rm build/ .Xil/ work/ vivado* -rf

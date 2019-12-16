@@ -25,6 +25,7 @@ cd $work_directory
 set xdc_dir [file normalize "../sdc"]
 set xdc_files [list \
 	[file normalize $xdc_dir/arty_ess.xdc] \
+	[file normalize $xdc_dir/arty_uart.xdc] \
 	[file normalize $xdc_dir/arty_mii.xdc] \
 	[file normalize $xdc_dir/arty_board.xdc] \
 ]
@@ -34,6 +35,7 @@ read_xdc $xdc_files
 
 set hdl_dir [file normalize "../hdl"]
 set vhd_files [list \
+	[file normalize $hdl_dir/mii_mdio.vhd] \
 	[file normalize $hdl_dir/top_vivado_400.vhd] \
 ]
 read_vhdl -vhdl2008 $vhd_files
@@ -46,21 +48,24 @@ read_vhdl -vhdl2008 $vhd_files
 
 set_property part xc7a35ticsg324-1L [current_project]
 
-# create_ip -name vio -vendor xilinx.com -library ip -module_name vio
-# set_property -dict [list \
-# 	CONFIG.C_PROBE_IN0_WIDTH {36} \
-# 	CONFIG.C_PROBE_OUT0_WIDTH {36} \
-# 	CONFIG.C_NUM_PROBE_IN {1} \
-# 	CONFIG.C_NUM_PROBE_OUT {1} \
-# ] [get_ips vio]
-# synth_ip [get_ips vio]
+set VIO_C_PROBE_IN0_WIDTH 36
+set VIO_C_PROBE_OUT0_WIDTH 36
+
+create_ip -name vio -vendor xilinx.com -library ip -module_name vio
+set_property -dict [list \
+	CONFIG.C_PROBE_IN0_WIDTH $VIO_C_PROBE_IN0_WIDTH \
+	CONFIG.C_PROBE_OUT0_WIDTH $VIO_C_PROBE_OUT0_WIDTH \
+	CONFIG.C_NUM_PROBE_IN 1 \
+	CONFIG.C_NUM_PROBE_OUT 1 \
+] [get_ips vio]
+synth_ip [get_ips vio]
 
 set ILA_C_PROBE0_WIDTH 36
 
 create_ip -name ila -vendor xilinx.com -library ip -module_name ila
 set_property -dict [list \
 	CONFIG.C_PROBE0_WIDTH  $ILA_C_PROBE0_WIDTH \
-	CONFIG.C_DATA_DEPTH 1024 \
+	CONFIG.C_DATA_DEPTH 8192 \
 	CONFIG.C_NUM_OF_PROBES 1 \
 ] [get_ips ila]
 synth_ip [get_ips ila]
@@ -73,6 +78,8 @@ synth_design \
 	-top [lindex [find_top] 0] \
 	-flatten_hierarchy none \
 	-verbose\
+	-generic VIO_C_PROBE_IN0_WIDTH=$VIO_C_PROBE_IN0_WIDTH \
+	-generic VIO_C_PROBE_OUT0_WIDTH=$VIO_C_PROBE_OUT0_WIDTH \
 	-generic ILA_C_PROBE0_WIDTH=$ILA_C_PROBE0_WIDTH
 #write_checkpoint -force synth_design.dcp
 report_timing_summary -file synth_design_timing_summary.rpt
